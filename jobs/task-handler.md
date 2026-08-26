@@ -1,6 +1,6 @@
 # Task Handler Instructions
 
-This file is the operational procedure for any agent working on a task. Read it together with `README.md`, `tasks/creator.md`, `tasks/init.md`, and the assigned task file before editing.
+This file is the operational procedure for any agent working on a task. Read it together with `README.md`, `jobs/creator.md`, `jobs/init.md`, and the assigned task file before editing.
 
 ## 1. Inspect before acting
 
@@ -12,7 +12,7 @@ This file is the operational procedure for any agent working on a task. Read it 
    ```
 
 3. Read the assigned task’s granular implementation, test, and documentation checkboxes.
-4. Inspect `tasks/claims/` for ownership.
+4. Inspect `jobs/claims/` for ownership.
 
 Checked granular items are preserved progress. Start with the first unchecked item; do not redo checked work unless verification shows it is invalid.
 
@@ -21,7 +21,7 @@ Checked granular items are preserved progress. Start with the first unchecked it
 Before changing implementation files, create the task claim directory as the ownership lock:
 
 ```bash
-mkdir tasks/claims/TASK-NNN
+mkdir jobs/claims/TASK-NNN
 ```
 
 Only the invocation whose `mkdir` succeeds owns the task. Immediately write `owner.md` with:
@@ -91,8 +91,8 @@ For the finalizer:
 - Run the full test suite.
 - Verify explicit task and claim targets.
 - Delete only the temporary task files, board, and verified task-group claims.
-- Preserve `tasks/creator.md`, `tasks/task-handler.md`, `tasks/init.md`, and root `AGENTS.md`.
-- Never recursively delete the `tasks/` directory.
+- Preserve `jobs/creator.md`, `jobs/task-handler.md`, `jobs/init.md`, and root `AGENTS.md`.
+- Never recursively delete the `jobs/` directory.
 
 If tests fail or a dependency is incomplete, delete nothing.
 

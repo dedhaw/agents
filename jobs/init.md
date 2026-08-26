@@ -1,19 +1,19 @@
 # Codex Task Initialization Protocol
 
-This is the startup protocol for an unassigned Codex session. Read the root `README.md`, `tasks/creator.md`, and `tasks/task-handler.md` first. Follow `tasks/task-handler.md` for claiming, granular progress, polling, recovery, and finalization.
+This is the startup protocol for an unassigned Codex session. Read the root `README.md`, `jobs/creator.md`, and `jobs/task-handler.md` first. Follow `jobs/task-handler.md` for claiming, granular progress, polling, recovery, and finalization.
 
 ## 1. Inspect the task board
 
-Check whether `tasks/README.md` and any `tasks/TASK-*.md` files exist.
+Check whether `jobs/README.md` and any `jobs/TASK-*.md` files exist.
 
-- Ignore `tasks/creator.md`, `tasks/init.md`, and `tasks/README.md` when selecting implementation tasks.
+- Ignore `jobs/creator.md`, `jobs/init.md`, and `jobs/README.md` when selecting implementation tasks.
 - Treat a task as complete only when its exact final marker is checked:
 
   ```markdown
   - [x] Done with implementation and testing
   ```
 
-- Inspect `tasks/claims/` for active ownership before selecting work.
+- Inspect `jobs/claims/` for active ownership before selecting work.
 - Reconcile the board before selecting work: a task containing the exact checked final marker is `Complete` even if its row still says `Available`, and completed claims are not active claims.
 
 If the task board or task files do not exist, enter planner mode.
@@ -25,7 +25,7 @@ Select the lowest-numeric incomplete task that has no claim directory, regardles
 Before editing any implementation file, atomically create:
 
 ```text
-tasks/claims/TASK-NNN/
+jobs/claims/TASK-NNN/
 ```
 
 The claim must contain an `owner.md` file with a unique agent ID for this Codex invocation, task ID, hostname/terminal when available, start time, heartbeat time, and status. Execute the directory creation as the atomic ownership operation: only the invocation whose `mkdir` succeeds may write `owner.md` or work on the task. If the directory already exists, do not continue it, do not rewrite its owner record, and do not infer ownership from hostname, terminal, or matching text. Inspect the next unclaimed task.
@@ -42,9 +42,9 @@ The agent may stop waiting only when the user cancels/changes the assignment, th
 
 ## 4. Finalizer selection and cleanup
 
-Do not enter planner mode merely because all implementation tasks are complete. First locate `tasks/TASK-999-finalize.md` (or the group’s explicitly reserved finalizer), claim it using the same ownership rules, and run it.
+Do not enter planner mode merely because all implementation tasks are complete. First locate `jobs/TASK-999-finalize.md` (or the group’s explicitly reserved finalizer), claim it using the same ownership rules, and run it.
 
-The finalizer must persistently poll until all implementation dependencies are complete, reconcile their board rows to `Complete`, run the full test suite, and verify the explicit deletion targets. Only after those checks pass may it delete generated `tasks/TASK-*.md`, `tasks/README.md`, and verified claim records belonging to the task group. It must preserve `tasks/creator.md`, `tasks/init.md`, and root `AGENTS.md`, and must never recursively delete `tasks/`.
+The finalizer must persistently poll until all implementation dependencies are complete, reconcile their board rows to `Complete`, run the full test suite, and verify the explicit deletion targets. Only after those checks pass may it delete generated `jobs/TASK-*.md`, `jobs/README.md`, and verified claim records belonging to the task group. It must preserve `jobs/creator.md`, `jobs/init.md`, and root `AGENTS.md`, and must never recursively delete `jobs/`.
 
 For a group containing one implementation task, the finalizer depends on that one task and follows exactly the same path. A missing finalizer is a task-group creation error; do not treat the group as finalized or silently delete files.
 

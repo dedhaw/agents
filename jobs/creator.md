@@ -1,6 +1,6 @@
 # Task Creator and Agent Execution Guide
 
-This file defines how Codex task files are created and how agents must execute them. Read the root [`README.md`](../README.md), [`tasks/init.md`](init.md), [`tasks/task-handler.md`](task-handler.md), and [`tasks/README.md`](README.md) before creating or running tasks. `tasks/init.md` is the startup protocol for an unassigned Codex session; `tasks/task-handler.md` is the execution and recovery procedure.
+This file defines how Codex task files are created and how agents must execute them. Read the root [`README.md`](../README.md), [`jobs/init.md`](init.md), [`jobs/task-handler.md`](task-handler.md), and [`jobs/README.md`](README.md) before creating or running tasks. `jobs/init.md` is the startup protocol for an unassigned Codex session; `jobs/task-handler.md` is the execution and recovery procedure.
 
 ## Creating a task
 
@@ -17,7 +17,7 @@ Every task must include:
 - A numeric priority/rank.
 - An explicit dependency list, or `None`.
 - A link/instruction to read `README.md`.
-- An instruction to read and follow `tasks/task-handler.md`.
+- An instruction to read and follow `jobs/task-handler.md`.
 - Implementation requirements.
 - Test and acceptance requirements.
 - Completion checkboxes.
@@ -35,16 +35,16 @@ New tasks must always begin with unchecked completion boxes. Never pre-check a t
 - [ ] Done with implementation and testing
 ```
 
-Add the task to `tasks/README.md`, including its rank and dependencies. Keep the dependency graph accurate.
+Add the task to `jobs/README.md`, including its rank and dependencies. Keep the dependency graph accurate.
 
-When creating a temporary task group, create `tasks/TASK-999-finalize.md` in the same operation. Set its dependencies to every implementation task, including a single-task group, and add it to the board with the lowest execution priority. Do not wait for implementation to finish before creating the finalizer.
+When creating a temporary task group, create `jobs/TASK-999-finalize.md` in the same operation. Set its dependencies to every implementation task, including a single-task group, and add it to the board with the lowest execution priority. Do not wait for implementation to finish before creating the finalizer.
 
 ## Claims and ownership
 
 Agents must claim a task before modifying implementation files. Claims use an atomic task-specific directory:
 
 ```text
-tasks/claims/TASK-NNN/
+jobs/claims/TASK-NNN/
 ```
 
 The claim contains `owner.md` with a unique agent ID, task ID, hostname/terminal when available, start time, last heartbeat, status (`claimed`, `working`, `waiting`, `complete`, or `stale`), and a short `progress` summary. The agent ID must be unique to the Codex invocation; hostname and terminal are descriptive metadata only and cannot establish ownership.
@@ -55,11 +55,11 @@ An interrupted task may be recovered only when the recorded status is not `compl
 
 Agents update their heartbeat while working or waiting. Use a 30-minute stale-claim threshold only after verifying that the owner is no longer active; never take over an active claim. A completed agent checks its own task marker first, marks its claim complete, and releases only its own claim.
 
-The task board and claims are temporary coordination artifacts and remain covered by the repository’s existing `tasks/*` ignore rule.
+The task board and claims are temporary coordination artifacts and remain covered by the repository’s existing `jobs/*` ignore rule.
 
 ## Startup and planner behavior
 
-Every repository should keep `tasks/init.md` as the startup protocol and root `AGENTS.md` as the automatic entry point. An unassigned agent must inspect the task board, reconcile task status from task checkboxes and claims, select the lowest-priority incomplete and unclaimed task, atomically claim it, and either implement it or wait for its dependencies.
+Every repository should keep `jobs/init.md` as the startup protocol and root `AGENTS.md` as the automatic entry point. An unassigned agent must inspect the task board, reconcile task status from task checkboxes and claims, select the lowest-priority incomplete and unclaimed task, atomically claim it, and either implement it or wait for its dependencies.
 
 After all non-finalizer tasks contain the exact checked completion marker, the agent must select the finalizer before entering planner mode. A task-group creator must create the finalizer at the same time as the implementation tasks so the one-task case is covered.
 
@@ -70,7 +70,7 @@ Planner mode is plan-only by default: it can inspect and propose work, but it do
 Every temporary task group must include exactly one final cleanup task. Create it when the group is created, after the implementation task IDs are known; do not wait until implementation tasks are complete:
 
 ```text
-tasks/TASK-999-finalize.md
+jobs/TASK-999-finalize.md
 ```
 
 The final task must:
@@ -86,13 +86,13 @@ The final task must:
 - Run the complete test suite before cleanup.
 - Confirm there are no unfinished task dependencies.
 - Delete only the generated task-group files after all checks pass:
-  - `tasks/TASK-*.md`
-  - `tasks/README.md`
+  - `jobs/TASK-*.md`
+  - `jobs/README.md`
 - Delete only the claim directories belonging to this task group after verifying their task IDs; never delete another active agent’s claim.
-- Preserve `tasks/creator.md` so it can be reused for a future task group.
+- Preserve `jobs/creator.md` so it can be reused for a future task group.
 - Check its own final cleanup marker last, immediately before or after removing the other task files.
 
-Because cleanup is destructive, the final task must not use broad recursive deletion such as `rm -rf tasks`. It must resolve and delete the explicit task-group paths only, verify the target list first, and leave `tasks/creator.md` untouched. If any dependency is incomplete or tests fail, it must not delete anything.
+Because cleanup is destructive, the final task must not use broad recursive deletion such as `rm -rf jobs`. It must resolve and delete the explicit task-group paths only, verify the target list first, and leave `jobs/creator.md` untouched. If any dependency is incomplete or tests fail, it must not delete anything.
 
 The final task should use a completion checklist like:
 
@@ -105,7 +105,7 @@ The final task should use a completion checklist like:
 
 For a permanent project task board, omit cleanup only when the user explicitly requests that task files be retained as documentation. Otherwise the finalizer is mandatory, including when the group contains only one implementation task.
 
-Before cleanup, reconcile `tasks/README.md`: every completed implementation task must be marked `Complete`, and stale values such as `Available` must not override a checked task marker.
+Before cleanup, reconcile `jobs/README.md`: every completed implementation task must be marked `Complete`, and stale values such as `Available` must not override a checked task marker.
 
 ## Task file template
 
@@ -117,17 +117,17 @@ Copy and adapt this template for new tasks:
 Priority: N
 Dependencies: None
 
-Read `README.md`, `tasks/README.md`, and `tasks/task-handler.md` first and follow the task-handler procedure.
+Read `README.md`, `jobs/README.md`, and `jobs/task-handler.md` first and follow the task-handler procedure.
 
 ## Agent instructions
 
 You may be assigned this task by saying:
 
 ```text
-Do tasks/TASK-NNN-short-description.md
+Do jobs/TASK-NNN-short-description.md
 ```
 
-Before editing, read and follow `tasks/task-handler.md`, atomically claim `tasks/claims/TASK-NNN/`, and write `owner.md` with the agent ID, task ID, start time, heartbeat time, status, and progress.
+Before editing, read and follow `jobs/task-handler.md`, atomically claim `jobs/claims/TASK-NNN/`, and write `owner.md` with the agent ID, task ID, start time, heartbeat time, status, and progress.
 
 If any dependency is incomplete, set the claim status to `waiting` and do not stop. Use a persistent polling session that re-reads each dependency every 15 seconds until every dependency contains `- [x] Done with implementation and testing`. Do not return a blocked response after one check.
 
@@ -145,7 +145,7 @@ Use this template for the cleanup task at the end of a temporary task group:
 Priority: 999
 Dependencies: TASK-001, TASK-002, TASK-003
 
-Read `README.md`, `tasks/README.md`, `tasks/creator.md`, and `tasks/task-handler.md` first and follow the task-handler procedure.
+Read `README.md`, `jobs/README.md`, `jobs/creator.md`, and `jobs/task-handler.md` first and follow the task-handler procedure.
 
 ## Agent instructions
 
@@ -159,7 +159,7 @@ If any dependency is incomplete, do not stop and do not report a blocker. Poll e
 
 After all dependencies are complete, update their board rows to `Complete`, mark this claim as `working`, and run the full test suite. If tests fail, do not delete task files; continue inspecting or waiting as appropriate.
 
-Before deletion, list and verify the explicit generated task files and claim directories. Delete `tasks/TASK-*.md`, `tasks/README.md`, and only the verified task-group claim directories. Preserve `tasks/creator.md`. Never delete the repository, workspace, or the entire `tasks/` directory.
+Before deletion, list and verify the explicit generated task files and claim directories. Delete `jobs/TASK-*.md`, `jobs/README.md`, and only the verified task-group claim directories. Preserve `jobs/creator.md`. Never delete the repository, workspace, or the entire `jobs/` directory.
 
 ## Completion checklist
 
@@ -264,13 +264,13 @@ Tasks without unmet dependencies may run in parallel. Agents must avoid editing 
 Independent task:
 
 ```text
-Do tasks/TASK-001-project-setup.md
-Read tasks/creator.md and follow its execution protocol.
+Do jobs/TASK-001-project-setup.md
+Read jobs/creator.md and follow its execution protocol.
 ```
 
 Dependent task:
 
 ```text
-Do tasks/TASK-006-validation-documentation.md
-Read tasks/creator.md and keep polling all dependencies every 15 seconds until they are complete. Do not exit after one re-check.
+Do jobs/TASK-006-validation-documentation.md
+Read jobs/creator.md and keep polling all dependencies every 15 seconds until they are complete. Do not exit after one re-check.
 ```
